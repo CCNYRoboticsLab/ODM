@@ -55,7 +55,7 @@ class ODMApp:
         postprocess = ODMPostProcess('odm_postprocess', args, progress=100.0)
         
 
-        # Normal pipeline
+        # Normal pipeline - This is the place to add more stages like crack detection
         self.first_stage = dataset
 
         dataset.connect(split) \
