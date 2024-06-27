@@ -1,6 +1,7 @@
 from opendm import io
 from opendm import ai
 from opendm.staindetection import StainDetector
+from opendm.copy_geo_exiftool import GeolocationProcessor
 
 from opendm import types
 from opendm import log
@@ -120,16 +121,16 @@ class ODMStainSegmentationStage(types.ODM_Stage):
             return
 
         stain_detector = StainDetector(model_path=model)
+        geo_copier = GeolocationProcessor()
 
         def process_image(photo):
             input_image = os.path.join(images_dir, photo.filename)
-            output_image = os.path.join(
-                stain_overlay_dir, f"stain_overlay_{photo.filename}"
-            )
+            output_image = os.path.join(stain_overlay_dir, photo.filename)
 
             try:
                 stain_detector.detect_and_overlay(input_image, output_image)
                 log.ODM_INFO(f"Generated stain overlay for {photo.filename}")
+                geo_copier.process_image(input_image, output_image)
                 return output_image
             except Exception as e:
                 log.ODM_WARNING(
