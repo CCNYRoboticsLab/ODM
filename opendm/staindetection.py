@@ -54,14 +54,15 @@ class StainDetector:  # Renamed the class
             interpolation=cv2.INTER_NEAREST,
         )
 
-        num_classes = segm_mask.max() + 1
-        colormap = cm.get_cmap("viridis", num_classes)
-        segm_mask_color = colormap(resized_segm_mask)[:, :, :3]
-        segm_mask_color = (segm_mask_color * 255).astype(np.uint8)
+        # Create a red color mask for stains
+        stain_mask = np.zeros_like(original_image)
+        stain_mask[resized_segm_mask > 0] = [0, 0, 255]  # Set red color for stains
 
-        alpha = 0.5
+        # Combine the original image with the stain mask using alpha blending
+        alpha = 0  # Transparency level (0.5 for 50% transparency)
         overlay_image = cv2.addWeighted(
-            original_image, 1 - alpha, segm_mask_color, alpha, 0
+            original_image, 1 - alpha, stain_mask, alpha, 0
         )
+
 
         return overlay_image
