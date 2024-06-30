@@ -54,15 +54,25 @@ class StainDetector:  # Renamed the class
             interpolation=cv2.INTER_NEAREST,
         )
 
+        # # Create a red color mask for stains
+        # stain_mask = np.zeros_like(original_image)
+        # stain_mask[resized_segm_mask > 0] = [0, 0, 255]  # Set red color for stains
+
+        # # Combine the original image with the stain mask using alpha blending
+        # alpha = 0.5  # Transparency level (0.5 for 50% transparency)
+        # overlay_image = cv2.addWeighted(
+        #     original_image, 1 - alpha, stain_mask, alpha, 0
+        # )
+        
         # Create a red color mask for stains
         stain_mask = np.zeros_like(original_image)
         stain_mask[resized_segm_mask > 0] = [0, 0, 255]  # Set red color for stains
 
-        # Combine the original image with the stain mask using alpha blending
-        alpha = 0  # Transparency level (0.5 for 50% transparency)
-        overlay_image = cv2.addWeighted(
-            original_image, 1 - alpha, stain_mask, alpha, 0
-        )
+        # Directly modify the original image based on the mask
+        original_image[resized_segm_mask > 0] = stain_mask[resized_segm_mask > 0]
+
+        # cv2.imwrite("output_onnx_overlay.jpg", original_image)
 
 
-        return overlay_image
+
+        return original_image

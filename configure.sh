@@ -54,6 +54,9 @@ ensure_prereqs() {
     echo "Installing tzdata"
     sudo $APT_GET install -y -qq tzdata
 
+    echo "Installing exiftool"
+    sudo $APT_GET install -y -qq libimage-exiftool-perl 
+
     UBUNTU_VERSION=$(lsb_release -r)
     if [[ "$UBUNTU_VERSION" == *"20.04"* ]]; then
         echo "Enabling PPA for Ubuntu GIS"
