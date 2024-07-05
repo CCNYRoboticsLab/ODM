@@ -1,9 +1,9 @@
-FROM nvidia/cuda:11.2.2-devel-ubuntu20.04 AS builder
+FROM nvidia/cuda:12.2.0-devel-ubuntu20.04 AS builder
 
 # Env variables
 ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONPATH="$PYTHONPATH:/code/SuperBuild/install/lib/python3.9/dist-packages:/code/SuperBuild/install/lib/python3.8/dist-packages:/code/SuperBuild/install/bin/opensfm" \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/code/SuperBuild/install/lib"
+  PYTHONPATH="$PYTHONPATH:/code/SuperBuild/install/lib/python3.9/dist-packages:/code/SuperBuild/install/lib/python3.8/dist-packages:/code/SuperBuild/install/bin/opensfm" \
+  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/code/SuperBuild/install/lib"
 
 # Prepare directories
 WORKDIR /code
@@ -15,20 +15,20 @@ COPY . ./
 RUN PORTABLE_INSTALL=YES GPU_INSTALL=YES bash configure.sh install
 
 # Clean Superbuild
-RUN bash configure.sh clean
+# RUN bash configure.sh clean
 
 ### END Builder
 
 ### Use a second image for the final asset to reduce the number and
 # size of the layers.
-FROM nvidia/cuda:11.2.2-runtime-ubuntu20.04
+FROM nvidia/cuda:12.2.0-runtime-ubuntu20.04
 #FROM nvidia/cuda:11.2.0-devel-ubuntu20.04
 
 # Env variables
 ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONPATH="$PYTHONPATH:/code/SuperBuild/install/lib/python3.9/dist-packages:/code/SuperBuild/install/lib/python3.8/dist-packages:/code/SuperBuild/install/bin/opensfm" \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/code/SuperBuild/install/lib" \
-    PDAL_DRIVER_PATH="/code/SuperBuild/install/bin"
+  PYTHONPATH="$PYTHONPATH:/code/SuperBuild/install/lib/python3.9/dist-packages:/code/SuperBuild/install/lib/python3.8/dist-packages:/code/SuperBuild/install/bin/opensfm" \
+  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/code/SuperBuild/install/lib" \
+  PDAL_DRIVER_PATH="/code/SuperBuild/install/bin"
 
 WORKDIR /code
 
@@ -47,4 +47,5 @@ RUN bash configure.sh installruntimedepsonly \
   && bash run.sh --help \
   && bash -c "eval $(python3 /code/opendm/context.py) && python3 -c 'from opensfm import io, pymap'"
 # Entry point
-ENTRYPOINT ["python3", "/code/run.py"]
+# ENTRYPOINT ["python3", "/code/run.py"]
+ENTRYPOINT [ "node", "/var/www/NodeODM/NodeODM/index.js" ]

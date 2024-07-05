@@ -10,6 +10,14 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# find_package(CUDA REQUIRED)
+# if (CUDA_FOUND)
+#     message(STATUS "CUDA found at: ${CUDA_PATH}")
+# else()
+#     message(FATAL_ERROR "CUDA not found. Please install CUDA and set the CUDA_PATH environment variable.")
+# endif()
+
+
 if (APPLE)
     find_program(HOMEBREW_EXECUTABLE brew)
     mark_as_advanced(FORCE HOMEBREW_EXECUTABLE)
@@ -108,9 +116,9 @@ if (WIN32)
   file(GLOB COPY_DLLS "${VCPKG_ROOT}/installed/x64-windows/bin/*.dll")
   file(COPY ${COPY_DLLS} DESTINATION "${SB_INSTALL_DIR}/bin")
 
-  message("Copying CUDA DLLs...")
-  file(GLOB CUDA_DLLS "$ENV{CUDA_PATH}/bin/cudart64*.dll")
-  file(COPY ${CUDA_DLLS} DESTINATION "${SB_INSTALL_DIR}/bin")
+#   message("Copying CUDA DLLs...")
+#   file(GLOB CUDA_DLLS "$ENV{CUDA_PATH}/bin/cudart64*.dll")
+#   file(COPY ${CUDA_DLLS} DESTINATION "${SB_INSTALL_DIR}/bin")
 
   set(WIN32_GDAL_ARGS -DGDAL_FOUND=TRUE -DGDAL_LIBRARY=${GDAL_LIBRARY} -DGDAL_INCLUDE_DIR=${GDAL_INCLUDE_DIR})
 elseif(APPLE)
@@ -209,6 +217,11 @@ else()
         set(POISSON_BUILD_CMD COMPILER=${CMAKE_CXX_COMPILER} make -j${nproc} -f Makefile.macos poissonrecon)
     endif()
 endif()
+
+add_custom_target(build_poissonrecon ALL
+    DEPENDS poissonrecon
+)
+
 externalproject_add(poissonrecon
     GIT_REPOSITORY    https://github.com/OpenDroneMap/PoissonRecon.git
     GIT_TAG           290

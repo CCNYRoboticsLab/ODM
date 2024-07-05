@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eo pipefail
-__dirname=$(cd $(dirname "$0"); pwd -P)
+__dirname=$(
+    cd $(dirname "$0")
+    pwd -P
+)
 cd "${__dirname}"
 
 if [ "$1" = "--setup" ]; then
@@ -9,29 +12,29 @@ if [ "$1" = "--setup" ]; then
     if [ ! -f .setupdevenv ]; then
         echo "Recompiling environment... this might take a while."
         bash configure.sh reinstall
-        
+
         touch .setupdevenv
         apt update && apt install -y vim git
         chown -R $3:$4 /code
-        chown -R $3:$4 /var/www
+        mkdir -p /var/www && chown -R $3:$4 /var/www
     fi
 
     echo "Adding $2 to /etc/passwd"
-    echo "$2:x:$3:$4::/home/$2:/bin/bash" >> /etc/passwd
+    echo "$2:x:$3:$4::/home/$2:/bin/bash" >>/etc/passwd
     echo "Adding $2 to /etc/group"
-    echo "$2:x:$4:" >> /etc/group
+    echo "$2:x:$4:" >>/etc/group
     echo "Adding $2 to /etc/shadow"
-    echo "$2:x:14871::::::" >> /etc/shadow
-    echo "$2   ALL=(ALL)   NOPASSWD:ALL" >> /etc/sudoers
-    echo "odm   ALL=(ALL)   NOPASSWD:ALL" >> /etc/sudoers
-    echo "echo '' && echo '' && echo '' && echo '###################################' && echo 'ODM Dev Environment Ready. Hack on!' && echo '###################################' && echo '' && cd /code" > $HOME/.bashrc
+    echo "$2:x:14871::::::" >>/etc/shadow
+    echo "$2   ALL=(ALL)   NOPASSWD:ALL" >>/etc/sudoers
+    echo "odm   ALL=(ALL)   NOPASSWD:ALL" >>/etc/sudoers
+    echo "echo '' && echo '' && echo '' && echo '###################################' && echo 'ODM Dev Environment Ready. Hack on!' && echo '###################################' && echo '' && cd /code" >$HOME/.bashrc
 
     # Install qt creator
     if hash qtcreator 2>/dev/null; then
         has_qtcreator="YES"
     fi
 
-    if [ "$has_qtcreator" != "YES" ] && [ "$5" == "YES" ]; then 
+    if [ "$has_qtcreator" != "YES" ] && [ "$5" == "YES" ]; then
         apt install -y libxrender1 gdb qtcreator
     fi
 
@@ -39,25 +42,24 @@ if [ "$1" = "--setup" ]; then
     if [ ! -e "$HOME/liquidprompt" ]; then
         git clone https://github.com/nojhan/liquidprompt.git --depth 1 $HOME/liquidprompt
     fi
-    
+
     if [ -e "$HOME/liquidprompt" ]; then
-        echo "source $HOME/liquidprompt/liquidprompt" >> $HOME/.bashrc
-        echo "export LP_PS1_PREFIX='(odmdev)'" >> $HOME/.bashrc
+        echo "source $HOME/liquidprompt/liquidprompt" >>$HOME/.bashrc
+        echo "export LP_PS1_PREFIX='(odmdev)'" >>$HOME/.bashrc
     fi
 
     # Colors
-    echo "alias ls='ls --color=auto'" >> $HOME/.bashrc
+    echo "alias ls='ls --color=auto'" >>$HOME/.bashrc
 
     # Python paths
-    echo $(python3 /code/opendm/context.py) >> $HOME/.bashrc
-    
-    # Vim 
-    printf "syntax on\nset showmatch\nset ts=4\nset sts=4\nset sw=4\nset autoindent\nset smartindent\nset smarttab\nset expandtab" > $HOME/.vimrc
+    echo $(python3 /code/opendm/context.py) >>$HOME/.bashrc
+
+    # Vim
+    printf "syntax on\nset showmatch\nset ts=4\nset sts=4\nset sw=4\nset autoindent\nset smartindent\nset smarttab\nset expandtab" >$HOME/.vimrc
 
     # Misc aliases
-    echo "alias pdal=/code/SuperBuild/install/bin/pdal" >> $HOME/.bashrc
-    echo "alias opensfm=/code/SuperBuild/install/bin/opensfm/bin/opensfm" >> $HOME/.bashrc
-    
+    echo "alias pdal=/code/SuperBuild/install/bin/pdal" >>$HOME/.bashrc
+    echo "alias opensfm=/code/SuperBuild/install/bin/opensfm/bin/opensfm" >>$HOME/.bashrc
 
     su -c bash $2
     exit 0
@@ -66,16 +68,16 @@ fi
 platform="Linux" # Assumed
 uname=$(uname)
 case $uname in
-	"Darwin")
-	platform="MacOS"
-	;;
-	MINGW*)
-	platform="Windows"
-	;;
+"Darwin")
+    platform="MacOS"
+    ;;
+MINGW*)
+    platform="Windows"
+    ;;
 esac
 
 if [[ $platform != "Linux" && $platform != "MacOS" ]]; then
-	echo "This script only works on Linux and MacOS."
+    echo "This script only works on Linux and MacOS."
     exit 1
 fi
 
@@ -86,7 +88,6 @@ if hash nvidia-smi 2>/dev/null; then
     has_nvidia_smi="YES"
 fi
 
-
 if [ "$has_docker" != "YES" ]; then
     echo "You need to install docker before running this script."
     exit 1
@@ -96,9 +97,9 @@ IMAGE_SET=NO
 if [[ ! -z $IMAGE ]]; then
     IMAGE_SET=YES
 fi
-export PORT="${PORT:=3003}"
+export PORT="${PORT:=3008}"
 export QTC="${QTC:=NO}"
-export IMAGE="${IMAGE:=opendronemap/nodeodm}"
+export IMAGE="${IMAGE:=nvidia/cuda:12.2.0-devel-ubuntu20.04}"
 export GPU="${GPU:=YES}"
 
 if [ -z "$DATA" ]; then
@@ -112,7 +113,6 @@ if [ -z "$DATA" ]; then
     echo "	QTC	When set to YES, installs QT Creator for C++ development (default: $QTC)"
     exit 1
 fi
-
 
 echo "Starting development environment..."
 echo "Datasets path: $DATA"
@@ -131,7 +131,8 @@ USER=$(id -un)
 GPU_FLAGS=""
 if [[ "$GPU" != "NO" ]]; then
     if [[ "$IMAGE_SET" = "NO" ]]; then
-        IMAGE="$IMAGE:gpu"
+        # IMAGE="$IMAGE:gpu"
+        IMAGE="$IMAGE"
     fi
 
     GPU_FLAGS="--gpus all"
@@ -141,5 +142,5 @@ if [[ "$GPU" != "NO" ]]; then
 fi
 
 xhost + || true
-docker run -ti --entrypoint bash --name odmdevstain_gpu --hostname odmdevstain_gpu --user root -v $(pwd):/code -v "$DATA":/datasets -p $PORT:3000 $GPU_FLAGS --privileged -e DISPLAY -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v="$HOME/.odm-dev-home:/home/$USER" $IMAGE -c "/code/start-dev-env.sh --setup $USER $USER_ID $GROUP_ID $QTC"
+docker run -ti --entrypoint bash --name odmdevstain_gpu_8 --hostname odmdevstain_gpu_8 --user root -v $(pwd):/code -v "$DATA":/datasets -p $PORT:3000 $GPU_FLAGS --privileged -e DISPLAY -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v="$HOME/.odm-dev-home:/home/$USER" $IMAGE -c "/code/start-dev-env-stain.sh --setup $USER $USER_ID $GROUP_ID $QTC"
 exit 0

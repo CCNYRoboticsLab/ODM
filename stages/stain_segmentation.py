@@ -112,7 +112,7 @@ class ODMStainSegmentationStage(types.ODM_Stage):
 
         # Load stain detection model
         model = ai.get_model(
-            "staindetection", "http://localhost:44289/config.json", "v1.0.0"
+            "staindetection", "http://192.168.13.108:44289/config.json", "v1.0.0"
         )
         if model is None:
             log.ODM_WARNING(
