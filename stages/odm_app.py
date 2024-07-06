@@ -7,8 +7,8 @@ from opendm import system
 from opendm import log
 
 # Import the new crack segmentation stage
+# from stages.crack_segmentation import ODMCrackSegmentationStage
 from stages.crack_segmentation import ODMCrackSegmentationStage
-from stages.stain_segmentation import ODMStainSegmentationStage
 from stages.dataset import ODMLoadDatasetStage
 from stages.run_opensfm import ODMOpenSfMStage
 from stages.openmvs import ODMOpenMVSStage
@@ -41,9 +41,9 @@ class ODMApp:
             "crack_segmentation", args, progress=2.5
         )
 
-        stain_segmentation = ODMStainSegmentationStage(
-            "stain_segmentation", args, progress=5.0
-        )
+        # crack_segmentation = ODMCrackSegmentationStage(
+        #     "stain_segmentation", args, progress=5.0
+        # )
 
         dataset = ODMLoadDatasetStage("dataset", args, progress=5.0)
         split = ODMSplitStage("split", args, progress=75.0)
@@ -73,9 +73,9 @@ class ODMApp:
         postprocess = ODMPostProcess("odm_postprocess", args, progress=100.0)
 
         # Normal pipeline
-        self.first_stage = stain_segmentation
+        self.first_stage = crack_segmentation
         # .connect(crack_segmentation)
-        stain_segmentation.connect(dataset).connect(split).connect(merge).connect(
+        crack_segmentation.connect(dataset).connect(split).connect(merge).connect(
             opensfm
         )
 

@@ -90,7 +90,7 @@ class ODMSplitStage(types.ODM_Stage):
 
                 octx.setup(
                     args,
-                    tree.stain_overlay,
+                    tree.crack_overlay,
                     reconstruction=reconstruction,
                     append_config=config,
                     rerun=self.rerun(),
@@ -179,7 +179,7 @@ class ODMSplitStage(types.ODM_Stage):
                                 secondary_band_photos = p2s[filename]
                                 for p in secondary_band_photos:
                                     system.link_file(
-                                        os.path.join(tree.stain_overlay, p.filename),
+                                        os.path.join(tree.crack_overlay, p.filename),
                                         submodel_images_dir,
                                     )
 
