@@ -1,16 +1,20 @@
 from opendm import io
 from opendm import ai
 from opendm.crackdetection import CrackDetector
+from opendm.copy_geo_exiftool import GeolocationProcessor
+
 from opendm import types
 from opendm import log
 from opendm import system
 import os
-from opendm.concurrency import parallel_map
+
+# from opendm.concurrency import parallel_map
 
 # from stages.dataset import valid_filename
 # from stages.dataset import find_mask, get_images
 from opendm import context
 from opendm.photo import PhotoCorruptedException
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class ODMCrackSegmentationStage(types.ODM_Stage):
@@ -75,6 +79,9 @@ class ODMCrackSegmentationStage(types.ODM_Stage):
                     )
 
         images_dir = outputs["tree"].dataset_raw
+        crack_overlay_dir = outputs["tree"].crack_overlay
+        if not os.path.exists(crack_overlay_dir):
+            system.mkdir_p(crack_overlay_dir)
 
         files, rejects = get_images(images_dir)
         if files:
@@ -105,7 +112,7 @@ class ODMCrackSegmentationStage(types.ODM_Stage):
 
         # Load crack detection model
         model = ai.get_model(
-            "crackdetection", "http://localhost:44289/config.json", "v1.0.0"
+            "crackdetection", "http://192.168.13.108:44289/config.json", "v1.0.0"
         )
         if model is None:
             log.ODM_WARNING(
@@ -114,23 +121,39 @@ class ODMCrackSegmentationStage(types.ODM_Stage):
             return
 
         crack_detector = CrackDetector(model_path=model)
+        geo_copier = GeolocationProcessor()
 
         def process_image(photo):
             input_image = os.path.join(images_dir, photo.filename)
-            output_image = os.path.join(images_dir, f"crack_overlay_{photo.filename}")
+            output_image = os.path.join(crack_overlay_dir, photo.filename)
 
             try:
                 crack_detector.detect_and_overlay(input_image, output_image)
                 log.ODM_INFO(f"Generated crack overlay for {photo.filename}")
+                geo_copier.process_image(input_image, output_image)
                 return output_image
             except Exception as e:
                 log.ODM_WARNING(
                     f"Failed to generate crack overlay for {photo.filename}: {str(e)}"
                 )
-                return None
+                # return None
+                raise
 
-        overlay_images = parallel_map(
-            process_image, photos, max_workers=args.max_concurrency
+        # overlay_images = parallel_map(
+        #     process_image, photos, max_workers=args.max_concurrency
+        # )
+
+        def parallel_map(func, iterable, max_workers=None):
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {executor.submit(func, item): item for item in iterable}
+                for future in as_completed(futures):
+                    try:
+                        yield future.result()
+                    except Exception as e:
+                        log.ODM_ERROR(f"Error processing {futures[future]}: {e}")
+
+        overlay_images = list(
+            parallel_map(process_image, photos, max_workers=args.max_concurrency)
         )
 
         # Filter out None values (failed detections)
@@ -140,15 +163,3 @@ class ODMCrackSegmentationStage(types.ODM_Stage):
         log.ODM_INFO(
             f"Completed crack detection. Generated {len(overlay_images)} overlay images."
         )
-
-
-# # Add the new stage to the pipeline
-# class ODMLoadDatasetStage(types.ODM_Stage):
-#     def process(self, args, outputs):
-#         # ... (previous code remains the same)
-
-#         # Add crack detection stage
-#         crack_detection = ODMCrackDetectionStage("crack_detection", args, outputs)
-#         crack_detection.run()
-
-#         # ... (rest of the code remains the same)

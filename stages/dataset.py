@@ -105,7 +105,7 @@ class ODMLoadDatasetStage(types.ODM_Stage):
                     )
 
         # get images directory
-        images_dir = tree.stain_overlay
+        images_dir = tree.crack_overlay
 
         # define paths and create working directories
         system.mkdir_p(tree.odm_georeferencing)

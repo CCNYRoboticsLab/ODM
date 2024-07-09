@@ -33,7 +33,7 @@ class ODMOpenSfMStage(types.ODM_Stage):
 
         octx = OSFMContext(tree.opensfm)
         octx.setup(
-            args, tree.stain_overlay, reconstruction=reconstruction, rerun=self.rerun()
+            args, tree.crack_overlay, reconstruction=reconstruction, rerun=self.rerun()
         )
         octx.photos_to_metadata(
             photos, args.rolling_shutter, args.rolling_shutter_readout, self.rerun()
@@ -150,7 +150,7 @@ class ODMOpenSfMStage(types.ODM_Stage):
         def radiometric_calibrate(shot_id, image):
             photo = reconstruction.get_photo(shot_id)
             if photo.is_thermal():
-                return thermal.dn_to_temperature(photo, image, tree.stain_overlay)
+                return thermal.dn_to_temperature(photo, image, tree.crack_overlay)
             else:
                 return multispectral.dn_to_reflectance(
                     photo,
@@ -197,7 +197,7 @@ class ODMOpenSfMStage(types.ODM_Stage):
                 reconstruction.multi_camera, args.primary_band
             )
             image_list_override = [
-                os.path.join(tree.stain_overlay, p.filename)
+                os.path.join(tree.crack_overlay, p.filename)
                 for p in photos
                 if p.band_name.lower() != primary_band_name.lower()
             ]
@@ -220,7 +220,7 @@ class ODMOpenSfMStage(types.ODM_Stage):
                     alignment_info = multispectral.compute_alignment_matrices(
                         reconstruction.multi_camera,
                         primary_band_name,
-                        tree.stain_overlay,
+                        tree.crack_overlay,
                         s2p,
                         p2s,
                         max_concurrency=args.max_concurrency,

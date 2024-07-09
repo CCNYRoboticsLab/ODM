@@ -97,7 +97,7 @@ IMAGE_SET=NO
 if [[ ! -z $IMAGE ]]; then
     IMAGE_SET=YES
 fi
-export PORT="${PORT:=3008}"
+export PORT="${PORT:=3010}"
 export QTC="${QTC:=NO}"
 export IMAGE="${IMAGE:=nvidia/cuda:12.2.0-devel-ubuntu20.04}"
 export GPU="${GPU:=YES}"
@@ -142,5 +142,5 @@ if [[ "$GPU" != "NO" ]]; then
 fi
 
 xhost + || true
-docker run -ti --entrypoint bash --name odmdevstain_gpu_8 --hostname odmdevstain_gpu_8 --user root -v $(pwd):/code -v "$DATA":/datasets -p $PORT:3000 $GPU_FLAGS --privileged -e DISPLAY -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v="$HOME/.odm-dev-home:/home/$USER" $IMAGE -c "/code/start-dev-env-stain.sh --setup $USER $USER_ID $GROUP_ID $QTC"
+docker run -ti --entrypoint bash --name odmdevstain_gpu_10 --hostname odmdevstain_gpu_10 --user root -v $(pwd):/code -v "$DATA":/datasets -p $PORT:3000 $GPU_FLAGS --privileged -e DISPLAY -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v="$HOME/.odm-dev-home:/home/$USER" $IMAGE -c "/code/start-dev-env-crack.sh --setup $USER $USER_ID $GROUP_ID $QTC"
 exit 0

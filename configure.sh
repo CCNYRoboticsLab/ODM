@@ -245,10 +245,10 @@ uninstall() {
 
     echo "Removing SuperBuild and build directories"
     mkdir -p "${RUNPATH}/SuperBuild/build/uninstalled"
-    # cd "${RUNPATH}"/SuperBuild
-    # rm -rfv build src download install
-    # cd ../
-    # rm -rfv build
+    cd "${RUNPATH}"/SuperBuild
+    rm -rfv build src download install
+    cd ../
+    rm -rfv build
 }
 
 reinstall() {

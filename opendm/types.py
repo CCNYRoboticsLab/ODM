@@ -400,6 +400,7 @@ class ODM_Tree(object):
         # order to keep track all files al directories during the
         # whole reconstruction process.
         self.dataset_raw = os.path.join(self.root_path, "images")
+        self.crack_overlay = os.path.join(self.root_path, "crack_overlay")
         self.stain_overlay = os.path.join(self.root_path, "stain_overlay")
         self.opensfm = os.path.join(self.root_path, "opensfm")
         self.openmvs = os.path.join(self.opensfm, "undistorted", "openmvs")
