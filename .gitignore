@@ -5,7 +5,6 @@ lib/
 logs/
 share/
 
-
 src/
 
 !modules/*
@@ -29,10 +28,11 @@ __pycache__
 *.snap
 storage/
 
-
 vcpkg/
 venv/
 python38/
 dist/
 innosetup/
 project/
+body.json
+log.json
