@@ -193,15 +193,18 @@ installNodeODM() {
         ln -s /code/SuperBuild/install/bin/pdal /usr/bin/pdal
 
     # Create installation directory
-    sudo mkdir -p /var/www/NodeODM
-    sudo chown -R "$USER":"$USER" /var/www/NodeODM
-    cd /var/www/NodeODM
+    cd /code
+    git config --global --add safe.directory /code
+    git submodule add https://github.com/CCNYRoboticsLab/NodeODM.git
+    # sudo mkdir -p /var/www/NodeODM
+    sudo chown -R "$USER":"$USER" /code/NodeODM
+    cd /code/NodeODM
 
     # Clone NodeODM repository
-    git clone https://github.com/OpenDroneMap/NodeODM.git
+    # git clone https://github.com/OpenDroneMap/NodeODM.git
 
     # Install Node.js dependencies
-    cd NodeODM
+    # cd NodeODM
     npm install --production && mkdir -p tmp
 
     # Create symbolic link for easier access (optional)

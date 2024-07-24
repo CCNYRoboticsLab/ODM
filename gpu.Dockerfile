@@ -11,6 +11,20 @@ WORKDIR /code
 # Copy everything
 COPY . ./
 
+# Install necessary tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  gnupg
+
+# Add Kitware GPG key
+RUN curl -sSL https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg
+
+# Add Kitware repository
+RUN echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu focal main" >> /etc/apt/sources.list.d/kitware.list
+
+# Update package lists
+RUN apt-get update
+
 # Run the build
 RUN PORTABLE_INSTALL=YES GPU_INSTALL=YES bash configure.sh install
 

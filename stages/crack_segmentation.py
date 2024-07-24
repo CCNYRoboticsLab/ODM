@@ -105,7 +105,7 @@ class ODMCrackSegmentationStage(types.ODM_Stage):
 
         # Load crack detection model
         model = ai.get_model(
-            "crackdetection", "http://localhost:44289/config.json", "v1.0.0"
+            "crackdetection", "http://192.168.13.108:44289/config.json", "v1.0.0"
         )
         if model is None:
             log.ODM_WARNING(
